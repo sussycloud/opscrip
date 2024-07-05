@@ -1,0 +1,194 @@
+-- Ensure Config is initialized in the global environment
+getgenv().Config = {}
+
+-- Load OrionLib
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local Window = OrionLib:MakeWindow({Name = "SussyHub Autofish", HidePremium = false, SaveConfig = false, ConfigFolder = "OrionTest"})
+
+-- Define Tabs
+local Tab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local Tele = Window:MakeTab({Name = "Teleport", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+
+-- Teleport function
+Tele:AddButton({
+    Name = "TP Fishing Area",
+    Callback = function()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-180.852783203125, 117.92350006103516, 5175.45703125)
+    end
+})
+
+-- Toggle and Button Callbacks
+Tab:AddToggle({
+    Name = "Auto Map",
+    Default = false,
+    Callback = function(enabled)
+        Config.automap = enabled
+        spawn(Automap)
+    end
+})
+
+Tab:AddToggle({
+    Name = "Auto Fish (Advanced)",
+    Default = false,
+    Callback = function(enabled)
+        Config.autoFishA = enabled
+        spawn(autoFishA)
+    end
+})
+
+Tab:AddToggle({
+    Name = "Auto Mail (Huge, Shard, Gems)",
+    Default = false,
+    Callback = function(enabled)
+        Config.autoMail = enabled
+        spawn(autoMail)
+    end
+})
+
+Tab:AddTextbox({
+    Name = "Username",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(username)
+        Config.username = username
+    end
+})
+
+Tab:AddTextbox({
+    Name = "Shard Amount",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(shards)
+        Config.shardAmount = tonumber(shards)
+    end
+})
+
+Tab:AddTextbox({
+    Name = "Gem Amount",
+    Default = "",
+    TextDisappear = false,
+    Callback = function(gems)
+        Config.gemAmount = tonumber(gems)
+    end
+})
+
+Tab:AddButton({
+    Name = "AntiAFK Jump",
+    Callback = function()
+        antiAFK()
+    end
+})
+
+Tab:AddButton({
+    Name = "AntiAFK Normal",
+    Callback = function()
+        antiAFKN()
+    end
+})
+
+Tab:AddButton({
+    Name = "Disable 3D Render",
+    Callback = function()
+        game:GetService("RunService"):Set3dRenderingEnabled(false)
+    end
+})
+
+Tab:AddButton({
+    Name = "Enable 3D Render",
+    Callback = function()
+        game:GetService("RunService"):Set3dRenderingEnabled(true)
+    end
+})
+
+-- Initialize OrionLib
+OrionLib:Init()
+
+-- Define functions
+function antiAFK()
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    while true do
+        VirtualInputManager:SendKeyEvent(true, "Space", false, game)
+        wait(0.2)
+        VirtualInputManager:SendKeyEvent(false, "Space", false, game)
+        wait(300)
+    end
+end
+
+function antiAFKN()
+    local vu = game:GetService("VirtualUser")
+    game:GetService("Players").LocalPlayer.Idled:Connect(function()
+        vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+        wait(1)
+        vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+    end)
+end
+
+function autoFishA()
+    while Config.autoFishA do
+        local x = math.random(10, 20)
+        local z = math.random(10, 20)
+
+        local argsCast = {
+            [1] = "AdvancedFishing",
+            [2] = "RequestCast",
+            [3] = Vector3.new(1470.6005859375, 61.6249885559082, -4448.0107421875) + Vector3.new(x, 0, z)
+        }
+
+        game:GetService("ReplicatedStorage").Network.Instancing_FireCustomFromClient:FireServer(unpack(argsCast))
+        wait(3.5)
+
+        local argsReel = {
+            [1] = "AdvancedFishing",
+            [2] = "RequestReel"
+        }
+
+        game:GetService("ReplicatedStorage").Network.Instancing_FireCustomFromClient:FireServer(unpack(argsReel))
+
+        repeat
+            wait()
+
+            local hasFishingLine = false
+            for _, descendant in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                if descendant.Name == "FishingLine" then
+                    hasFishingLine = true
+                    break
+                end
+            end
+
+            if not hasFishingLine then
+                break
+            end
+
+            local argsClicked = {
+                [1] = "AdvancedFishing",
+                [2] = "Clicked"
+            }
+
+            game:GetService("ReplicatedStorage").Network.Instancing_InvokeCustomFromClient:InvokeServer(unpack(argsClicked))
+        until not hasFishingLine
+
+        wait()
+    end
+end
+
+function autoMail()
+    while Config.autoMail do
+        -- Implement your autoMail functionality here
+        wait(2)
+    end
+end
+
+function Automap()
+    while Config.automap do
+        -- Implement your Automap functionality here
+        wait()
+    end
+end
+
+-- Start loop for other functionalities
+while true do
+    wait()
+    pcall(function()
+        -- Implement your other functionalities here
+    end)
+end
